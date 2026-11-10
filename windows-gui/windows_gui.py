@@ -1,11 +1,13 @@
 """Desktop setup and scheduled runner for the Windows autologin script."""
 import base64
+import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 import traceback
 
 import windows_autologin as autologin
@@ -13,7 +15,6 @@ import windows_autologin as autologin
 
 TASK_NAME = "FortiGate Wi-Fi Autologin"
 INSTALL_DIR = Path(os.environ["LOCALAPPDATA"]) / "FortiGateAutologin"
-INSTALLED_EXE = INSTALL_DIR / "FortiGate Autologin.exe"
 CREDENTIAL_FILE = INSTALL_DIR / "credential.xml"
 POWERSHELL = Path(os.environ["SystemRoot"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
 
@@ -38,16 +39,31 @@ $config = [Console]::In.ReadToEnd() | ConvertFrom-Json
     return result.stdout.strip()
 
 
+def install_executable(source, directory):
+    with source.open("rb") as executable:
+        digest = hashlib.file_digest(executable, "sha256").hexdigest()
+    destination = directory / f"FortiGate-Autologin-{digest}.exe"
+    if destination.exists():
+        return destination
+
+    # Publish a complete copy under a new name. A running copy may be locked.
+    with tempfile.NamedTemporaryFile(dir=directory, delete=False) as temporary:
+        staged = Path(temporary.name)
+    try:
+        shutil.copyfile(source, staged)
+        try:
+            staged.rename(destination)
+        except FileExistsError:
+            # Another setup window installed this same build first.
+            pass
+    finally:
+        staged.unlink(missing_ok=True)
+    return destination
+
+
 def save_and_start(username, password, startup):
     INSTALL_DIR.mkdir(parents=True, exist_ok=True)
-    existing_exe = Path(sys.executable)
-    if existing_exe.resolve() != INSTALLED_EXE.resolve():
-        powershell("""
-if (Get-ScheduledTask -TaskName $config.task -ErrorAction SilentlyContinue) {
-    Stop-ScheduledTask -TaskName $config.task
-}
-""")
-        shutil.copy2(existing_exe, INSTALLED_EXE)
+    installed_exe = install_executable(Path(sys.executable), INSTALL_DIR)
     powershell("""
 $secret = [Security.SecureString]::new()
 foreach ($character in $config.password.ToCharArray()) { $secret.AppendChar($character) }
@@ -61,13 +77,18 @@ $task = @{ TaskName = $config.task; Action = $action; Principal = $principal; Se
 if ($config.startup) {
     $task.Trigger = New-ScheduledTaskTrigger -AtLogOn -User $user
 }
-if (Get-ScheduledTask -TaskName $config.task -ErrorAction SilentlyContinue) {
+if ((Get-ScheduledTask -TaskName $config.task -ErrorAction SilentlyContinue).State -eq 'Running') {
     Stop-ScheduledTask -TaskName $config.task
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    while ((Get-ScheduledTask -TaskName $config.task).State -eq 'Running') {
+        if ([DateTime]::UtcNow -ge $deadline) { throw 'The background task did not stop. Wait a moment and try again.' }
+        Start-Sleep -Milliseconds 200
+    }
 }
 $credential | Export-Clixml -LiteralPath $config.credential
 Register-ScheduledTask @task -Force | Out-Null
 Start-ScheduledTask -TaskName $config.task
-""", username=username, password=password, startup=startup, exe=str(INSTALLED_EXE),
+""", username=username, password=password, startup=startup, exe=str(installed_exe),
         directory=str(INSTALL_DIR), credential=str(CREDENTIAL_FILE))
 
 
