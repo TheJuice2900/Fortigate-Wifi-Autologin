@@ -115,7 +115,7 @@ def show_window():
     from tkinter import messagebox, ttk
 
     window = tk.Tk()
-    window.title("FortiGate Wi-Fi Autologin")
+    window.title("Fortigate Login")
     window.resizable(False, False)
     form = ttk.Frame(window, padding=22)
     form.grid(sticky="nsew")
@@ -124,7 +124,7 @@ def show_window():
     startup = tk.BooleanVar(value=True)
     status = tk.StringVar(value="Enter your campus credentials to get started.")
 
-    ttk.Label(form, text="NIT Goa Wi-Fi Autologin", font=("Segoe UI", 16)).grid(row=0, columnspan=3, sticky="w")
+    ttk.Label(form, text="Fortigate Login", font=("Segoe UI", 16)).grid(row=0, columnspan=3, sticky="w")
     ttk.Label(form, text="Campus username").grid(row=1, column=0, sticky="w", pady=(14, 4))
     user_field = ttk.Entry(form, textvariable=username, width=35)
     user_field.grid(row=1, column=1, columnspan=2, sticky="ew", pady=(14, 4))

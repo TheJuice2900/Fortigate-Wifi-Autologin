@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FortiGate captive-portal auto-login (NIT Goa).
+Fortigate Login automates captive portal sign-in.
 Install on college Wi-Fi with: python3 install_autologin.py
 The installer saves credentials and enrolls the current Wi-Fi router.
 AUTOLOGIN_USER and AUTOLOGIN_PASS can override the saved credentials.

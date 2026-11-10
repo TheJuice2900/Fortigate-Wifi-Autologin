@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FortiGate captive-portal auto-login (NIT Goa).
+Fortigate Login automates captive portal sign-in.
 Run visibly:   python autologin.py      (console shows every check)
 Run hidden:    pythonw autologin.py     (read autologin.log instead)
 """
