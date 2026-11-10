@@ -6,7 +6,7 @@ Automatically signs in to the NIT Goa (or any) FortiGate captive portal.
 
 ### Windows app
 
-[Download FortiGate-Autologin.exe (64-bit Windows)](https://github.com/TheJuice2900/Fortigate-Wifi-Autologin/releases/download/windows-gui-v1/FortiGate-Autologin.exe). 
+[Download FortiGate-Autologin.exe (64-bit Windows)](https://github.com/TheJuice2900/Fortigate-Wifi-Autologin/releases/download/windows-gui-v2/FortiGate-Autologin.exe). 
 (Antivirus software may flag as dangerous due to the .exe being unsigned. Ignore and select **More Info > Run Anyway**)
 
 1. Connect to campus Wi-Fi and close any manual run of the Python script.
