@@ -88,6 +88,13 @@ if ((Get-ScheduledTask -TaskName $config.task -ErrorAction SilentlyContinue).Sta
 $credential | Export-Clixml -LiteralPath $config.credential
 Register-ScheduledTask @task -Force | Out-Null
 Start-ScheduledTask -TaskName $config.task
+$deadline = [DateTime]::UtcNow.AddSeconds(8)
+while ((Get-ScheduledTask -TaskName $config.task).State -ne 'Running') {
+    if ([DateTime]::UtcNow -ge $deadline) {
+        throw 'Windows did not report the task running. Open the log folder to check for startup errors.'
+    }
+    Start-Sleep -Milliseconds 200
+}
 """, username=username, password=password, startup=startup, exe=str(installed_exe),
         directory=str(INSTALL_DIR), credential=str(CREDENTIAL_FILE))
 
@@ -145,7 +152,12 @@ def show_window():
             messagebox.showerror("Setup failed", str(error))
             return
         password.set("")
-        status.set("Settings saved. Background start requested.")
+        status.set("Settings saved. Background task is running.")
+        messagebox.showinfo(
+            "Fortigate Login started",
+            "Fortigate Login is running in the background. You can close this window.",
+            parent=window,
+        )
 
     def pause():
         try:
