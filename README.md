@@ -1,6 +1,6 @@
 # FortiGate Wi-Fi Autologin
 
-Automatically signs in to the NIT Goa FortiGate captive portal. Use the script for your operating system.
+Automatically signs in to the NIT Goa (or any) FortiGate captive portal.
 
 ## Windows
 
@@ -14,7 +14,8 @@ Automatically signs in to the NIT Goa FortiGate captive portal. Use the script f
 
 You can close the window while autologin runs in the background. The app encrypts the saved password for your Windows account on that PC. Reopen the app to **Pause**, **Resume**, or **Open Log Folder**. Pause it before leaving campus because the Windows script checks the active network.
 
-### Manual Python setup
+
+### Building from Source
 
 Download [autologin-windows.py](autologin-windows.py). Install Python 3, then open PowerShell in the folder where you saved the script. Run the following once while you have internet access.
 
